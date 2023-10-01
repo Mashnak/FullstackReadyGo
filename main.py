@@ -1,6 +1,6 @@
 import os
 import tkinter as tk
-from tkinter import ttk, filedialog
+from tkinter import ttk, filedialog, messagebox
 import subprocess
 import shutil
 
@@ -15,7 +15,7 @@ def horizontal_line(parent):
     ttk.Separator(parent, orient="horizontal").pack(fill=tk.X, pady=10)
 
 
-def generate_fullstack(frontend_var, backend_vars, db_var, docker_var, root_directory):
+def generate_fullstack(frontend_var, backend_vars, db_var, docker_var):
     directories = {
         "Angular": "frontend_angular",
         "React": "frontend_react",
@@ -27,6 +27,9 @@ def generate_fullstack(frontend_var, backend_vars, db_var, docker_var, root_dire
         "PostgreSQL": "database_postgresql",
         "MySQL": "database_mysql",
     }
+
+    root_directory = "fullstack_temp"
+    os.makedirs(root_directory, exist_ok=True)
 
     selected = []
     if frontend_var.get() == 1:
@@ -44,43 +47,51 @@ def generate_fullstack(frontend_var, backend_vars, db_var, docker_var, root_dire
 
     docker_selected = docker_var.get() == 1
 
-    # Temporary directory to store all project files
-    temp_dir = os.path.join(root_directory, "temp_fullstack_project")
-    os.makedirs(temp_dir, exist_ok=True)
-
     for name in selected:
-        directory_path = os.path.join(temp_dir, directories[name])
+        directory_path = os.path.join(root_directory, directories[name])
 
         if name == "Angular":
+            # Create Angular project using subprocess
             try:
                 cmd = f"ng new {directories[name]} --routing=true --style=css --skip-install --skip-git"
-                subprocess.check_call(cmd, shell=True, cwd=temp_dir)
+                subprocess.check_call(cmd, cwd=root_directory, shell=True)
                 print(f"Successfully created Angular project {directories[name]}")
+
             except subprocess.CalledProcessError as e:
                 print(f"Error creating Angular project: {e}")
         else:
             os.makedirs(directory_path, exist_ok=True)
 
         if docker_selected:
-            docker_content = f"# Dockerfile for {name}\n"
-            docker_content += f"# You can add the necessary commands to build the Docker image for {name} here\n"
             with open(os.path.join(directory_path, "Dockerfile"), "w") as file:
-                file.write(docker_content)
+                file.write(f"# Dockerfile for {name}\n")
+                file.write(
+                    f"# You can add the necessary commands to build the Docker image for {name} here\n"
+                )
 
     if docker_selected:
-        docker_compose_content = 'version: "3"\nservices:\n'
-        for name in selected:
-            docker_compose_content += f"  {directories[name]}:\n"
-            docker_compose_content += f"    build: ./{directories[name]}\n"
-        with open(os.path.join(temp_dir, "docker-compose.yml"), "w") as file:
-            file.write(docker_compose_content)
+        with open(os.path.join(root_directory, "docker-compose.yml"), "w") as file:
+            file.write('version: "3"\n')
+            file.write("services:\n")
+            for name in selected:
+                file.write(f"  {directories[name]}:\n")
+                file.write(f"    build: ./{directories[name]}\n")
 
-    shutil.make_archive(
-        os.path.join(root_directory, "fullstack_project"), "zip", temp_dir
+    # Saving the entire structure as a zip
+    save_directory = filedialog.asksaveasfilename(
+        title="Save Zip As",
+        defaultextension=".zip",
+        filetypes=[("Zip files", "*.zip")],
+        initialfile="FullstackReadyGo.zip",
+        initialdir=os.path.expanduser("~/Documents"),
     )
-    shutil.rmtree(temp_dir)
+    if not save_directory:
+        shutil.rmtree(root_directory)  # Removing the temporary directory
+        return
 
-    print(f"Zip file created at: {root_directory}/fullstack_project.zip")
+    shutil.make_archive(save_directory.replace(".zip", ""), "zip", root_directory)
+    shutil.rmtree(root_directory)  # Removing the temporary directory
+    messagebox.showinfo("Success", f"Files zipped and saved at: {save_directory}")
 
 
 def main():
@@ -182,25 +193,11 @@ def main():
 
     horizontal_line(root)
 
-    # Button to choose directory
-    directory_var = tk.StringVar()
-    directory_var.set("Choose a directory...")
-    directory_btn = ttk.Button(
-        root,
-        text="Choose Directory",
-        command=lambda: directory_var.set(filedialog.askdirectory()),
-    )
-    directory_btn.pack(pady=10)
-    directory_label = ttk.Label(root, textvariable=directory_var)
-    directory_label.pack(pady=5)
-
     # Generate fullstack button
     generate_btn = ttk.Button(
         root,
         text="Generate Fullstack",
-        command=lambda: generate_fullstack(
-            angular_var, backends, dbs, docker_var, directory_var.get()
-        ),
+        command=lambda: generate_fullstack(angular_var, backends, dbs, docker_var),
     )
     generate_btn.pack(pady=10)
 
