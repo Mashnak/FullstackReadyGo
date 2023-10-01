@@ -1,4 +1,4 @@
-FullstackReadyGo
+# FullstackReadyGo
 FullstackReadyGo is a handy tool that allows users to create a directory structure for a fullstack project based on selected frontend, backend, and database technologies. The result is a zipped file that includes the desired tech stack setup, potentially with Docker configurations.
 
 Features:
@@ -17,7 +17,8 @@ Clone this repository:
 
 bash
 Copy code
-git clone [[YOUR REPOSITORY LINK]](https://github.com/Mashnak/FullstackReadyGo)
+git clone https://github.com/Mashnak/FullstackReadyGo
+
 Navigate to the project directory: https://github.com/Mashnak/FullstackReadyGo
 
 bash
