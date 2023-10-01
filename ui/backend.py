@@ -10,6 +10,7 @@ def create_backend_ui(root, uncheck_others):
     flask_var = tk.IntVar()
     django_var = tk.IntVar()
     spring_var = tk.IntVar()
+    spring_var.set(1)
 
     backends = [flask_var, django_var, spring_var]
 

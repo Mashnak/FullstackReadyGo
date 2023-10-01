@@ -8,6 +8,7 @@ def create_frontend_ui(root, uncheck_others):
     frontend_label.pack(pady=10, anchor=tk.W)
 
     angular_var = tk.IntVar()
+    angular_var.set(1)
     react_var = tk.IntVar()
 
     frontends = [angular_var, react_var]

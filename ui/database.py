@@ -10,6 +10,7 @@ def create_database_ui(root, uncheck_others):
     neo4j_var = tk.IntVar()
     mongo_var = tk.IntVar()
     postgres_var = tk.IntVar()
+    postgres_var.set(1)
     mysql_var = tk.IntVar()
 
     dbs = [neo4j_var, mongo_var, postgres_var, mysql_var]
