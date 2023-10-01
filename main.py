@@ -32,10 +32,9 @@ def generate_fullstack(frontend_var, backend_vars, db_var, docker_var):
     os.makedirs(root_directory, exist_ok=True)
 
     selected = []
-    if frontend_var.get() == 1:
-        selected.append("Angular")
-    else:
-        selected.append("React")
+    for var, name in zip(frontend_var, ["Angular", "React"]):
+        if var.get() == 1:
+            selected.append(name)
 
     for var, name in zip(backend_vars, ["Flask", "Django", "Spring Boot"]):
         if var.get() == 1:
@@ -114,27 +113,20 @@ def main():
     frontend_label = ttk.Label(root, text="Frontend:")
     frontend_label.pack(pady=10, anchor=tk.W)
 
-    angular_var = tk.IntVar()
-    react_var = tk.IntVar()
-
     frontend_frame = ttk.Frame(root)
     frontend_frame.pack(fill=tk.X, padx=5)
 
-    angular_cb = ttk.Checkbutton(
-        frontend_frame,
-        text="Angular",
-        variable=angular_var,
-        command=lambda: uncheck_others(angular_var, [angular_var, react_var]),
-    )
-    angular_cb.grid(row=0, column=0, padx=10)
+    frontend_texts = ["Angular", "React"]
+    frontend_vars = [tk.IntVar() for _ in frontend_texts]
 
-    react_cb = ttk.Checkbutton(
-        frontend_frame,
-        text="React",
-        variable=react_var,
-        command=lambda: uncheck_others(react_var, [angular_var, react_var]),
-    )
-    react_cb.grid(row=0, column=1, padx=10)
+    for i, (text, var) in enumerate(zip(frontend_texts, frontend_vars)):
+        cb = ttk.Checkbutton(
+            frontend_frame,
+            text=text,
+            variable=var,
+            command=lambda v=var: uncheck_others(v, frontend_vars),
+        )
+        cb.grid(row=0, column=i, padx=10)
 
     horizontal_line(root)
 
@@ -142,24 +134,18 @@ def main():
     backend_label = ttk.Label(root, text="Backend:")
     backend_label.pack(pady=10, anchor=tk.W)
 
-    flask_var = tk.IntVar()
-    django_var = tk.IntVar()
-    spring_var = tk.IntVar()
-
-    backends = [flask_var, django_var, spring_var]
-
     backend_frame = ttk.Frame(root)
     backend_frame.pack(fill=tk.X, padx=5)
 
     backend_texts = ["Flask", "Django", "Spring Boot"]
-    backend_vars = [flask_var, django_var, spring_var]
+    backend_vars = [tk.IntVar() for _ in backend_texts]
 
     for i, (text, var) in enumerate(zip(backend_texts, backend_vars)):
         cb = ttk.Checkbutton(
             backend_frame,
             text=text,
             variable=var,
-            command=lambda v=var: uncheck_others(v, backends),
+            command=lambda v=var: uncheck_others(v, backend_vars),
         )
         cb.grid(row=0, column=i, padx=10)
 
@@ -197,7 +183,9 @@ def main():
     generate_btn = ttk.Button(
         root,
         text="Generate Fullstack",
-        command=lambda: generate_fullstack(angular_var, backends, dbs, docker_var),
+        command=lambda: generate_fullstack(
+            frontend_vars, backend_vars, dbs, docker_var
+        ),
     )
     generate_btn.pack(pady=10)
 
