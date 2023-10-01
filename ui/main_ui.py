@@ -16,7 +16,7 @@ def create_main_ui(root, generate_fullstack, horizontal_line):
     horizontal_line(root)
     backend_vars = create_backend_ui(root, utils.uncheck_others)
     horizontal_line(root)
-    dbs = create_database_ui(root, utils.uncheck_others)
+    db_vars = create_database_ui(root, utils.uncheck_others)
     horizontal_line(root)
 
     # Generate fullstack button
@@ -24,7 +24,7 @@ def create_main_ui(root, generate_fullstack, horizontal_line):
         root,
         text="Generate Fullstack",
         command=lambda: generate_fullstack(
-            frontend_vars, backend_vars, dbs, docker_var
+            frontend_vars, backend_vars, db_vars, docker_var
         ),
     )
     generate_btn.pack(pady=10)
