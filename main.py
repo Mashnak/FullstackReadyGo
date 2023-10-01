@@ -1,6 +1,8 @@
 import os
 import tkinter as tk
 from tkinter import ttk, filedialog
+import subprocess
+import shutil
 
 
 def uncheck_others(current_var, variables):
@@ -42,29 +44,43 @@ def generate_fullstack(frontend_var, backend_vars, db_var, docker_var, root_dire
 
     docker_selected = docker_var.get() == 1
 
+    # Temporary directory to store all project files
+    temp_dir = os.path.join(root_directory, "temp_fullstack_project")
+    os.makedirs(temp_dir, exist_ok=True)
+
     for name in selected:
-        directory_path = os.path.join(root_directory, directories[name])
-        os.makedirs(directory_path, exist_ok=True)
-        if (
-            docker_selected
-        ):  # If Docker is selected, create a Dockerfile in each directory
+        directory_path = os.path.join(temp_dir, directories[name])
+
+        if name == "Angular":
+            try:
+                cmd = f"ng new {directories[name]} --routing=true --style=css --skip-install --skip-git"
+                subprocess.check_call(cmd, shell=True, cwd=temp_dir)
+                print(f"Successfully created Angular project {directories[name]}")
+            except subprocess.CalledProcessError as e:
+                print(f"Error creating Angular project: {e}")
+        else:
+            os.makedirs(directory_path, exist_ok=True)
+
+        if docker_selected:
+            docker_content = f"# Dockerfile for {name}\n"
+            docker_content += f"# You can add the necessary commands to build the Docker image for {name} here\n"
             with open(os.path.join(directory_path, "Dockerfile"), "w") as file:
-                file.write(f"# Dockerfile for {name}\n")
-                file.write(
-                    f"# You can add the necessary commands to build the Docker image for {name} here\n"
-                )
+                file.write(docker_content)
 
     if docker_selected:
-        with open(os.path.join(root_directory, "docker-compose.yml"), "w") as file:
-            file.write('version: "3"\n')
-            file.write("services:\n")
-            for name in selected:
-                file.write(f"  {directories[name]}:\n")
-                file.write(
-                    f"    build: ./{directories[name]}\n"
-                )  # Pointing to the directory of the service
+        docker_compose_content = 'version: "3"\nservices:\n'
+        for name in selected:
+            docker_compose_content += f"  {directories[name]}:\n"
+            docker_compose_content += f"    build: ./{directories[name]}\n"
+        with open(os.path.join(temp_dir, "docker-compose.yml"), "w") as file:
+            file.write(docker_compose_content)
 
-    print(f"Directories and files created at: {root_directory}")
+    shutil.make_archive(
+        os.path.join(root_directory, "fullstack_project"), "zip", temp_dir
+    )
+    shutil.rmtree(temp_dir)
+
+    print(f"Zip file created at: {root_directory}/fullstack_project.zip")
 
 
 def main():
